@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - '*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements*.txt'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements*.txt'
+
+jobs:
+  lint-test:
+    name: Lint · Typecheck · Test
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('pyproject.toml') != '' || hashFiles('requirements*.txt') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --dev
+      - name: Ruff check
+        run: uv run ruff check .
+      - name: Mypy typecheck
+        run: uv run mypy .
+      - name: Pytest
+        run: uv run pytest -v

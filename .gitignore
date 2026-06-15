@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# uv
+.venv/
+uv.lock
+
+# Project data (PII + large files)
+data/raw/
+data/processed/
+*.gguf
+*.bin
+*.safetensors
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# MLflow
+mlruns/
+
+# Logs
+*.log
+
+# Model outputs
+training/outputs/
+deployment/*.gguf
+
+# Build
+dist/
+build/
+*.egg-info/
