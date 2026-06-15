@@ -1,5 +1,7 @@
 # orlon-bot
 
+![CI](https://github.com/vkkatariya/orlon-bot/actions/workflows/ci.yml/badge.svg)
+
 > End-to-end ML pipeline: personal style-tuned LLM fine-tuned on chat data, deployed as a Telegram bot.
 
 ---
