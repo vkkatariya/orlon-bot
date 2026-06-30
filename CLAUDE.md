@@ -13,33 +13,29 @@ Before any meaningful work, read these files in order:
 3. `tasks/todo.md` — phased task list
 4. `tasks/lessons.md` — active prevention rules
 
-**This project runs in the dual-session model** (see `workflow/SESSION-WORKFLOW.md` v2):
+**This project uses the dual-session model** (see `workflow/SESSION-WORKFLOW.md` v3):
 
 - **Local session** (this is normally the one you are): `[orlon-bot]-local`
   - Host: athena tmux
   - Process: Claude CLI on athena, started with `claude --remote-control '[orlon-bot]-local'`
-  - Branch: `claude/local` (work on `feat/<task>` sub-branches off it)
-  - Filesystem: full local access (athena's `/home/radxa/...`, Docker, Ollama on 127.0.0.1:11434, MLflow on 5000, pm2)
-  - Use for: design iteration, file edits, debugging, Python dev, discord_parser.py runs, mlflow logs, anything needing local FS or running services
-- **Cloud session** (sibling, long-lived): `[orlon-bot]-cloud`
+  - Branch: whatever the working dir has checked out (work on `feat/<task>` sub-branches off `dev` or `main`)
+  - Filesystem: full local access (athena's `/home/radxa/...`, Docker, etc.)
+  - Use for: design iteration, file edits, debugging, dev server, anything needing local FS, deploys
+- **Cloud session** (ephemeral, for heavy work): `[orlon-bot]-cloud`
   - Host: Anthropic cloud container (NOT your machine)
-  - Process: started from https://claude.ai/code → Code tab → New session → pick repo → pick branch `claude/cloud`
-  - Branch: `claude/cloud` (work on `feat/<task>-cloud` sub-branches off it)
-  - Filesystem: **ONLY the GitHub repo** (no `~/dev-shared/`, no Docker, no Ollama, no MLflow, no Telegram bot, no Python venv)
-  - Use for: validation, lint/typecheck, GitHub Actions verification, anything needing CPU isolation
-  - **Cannot do:** run discord_parser.py (no Python venv, no raw data), train on Kaggle (no GPU access from cloud), run Telegram bot (no Ollama backend), access .env secrets, commit raw chat data
+  - Process: started from https://claude.ai/code → Code tab → New session → pick repo → pick the sub-branch the local session is working on
+  - Branch: same as the local session (both share the working dir on the repo; no separate lineage branches)
+  - Filesystem: **ONLY the GitHub repo** (no `~/dev-shared/`, no Docker, no `.env.local`, no local servers)
+  - Use for: `pnpm install` / `npm install`, Playwright runs, full builds, audits, anything needing CPU isolation
+  - **Cannot do:** `vercel deploy` (no auth), access local servers, run Docker, see homelab configs
 
-**One-time setup** (run on first session per project, on athena):
-```bash
-cd ~/dev-shared/projects/orlon-bot
-git branch claude/local main
-git branch claude/cloud main
-git push origin claude/local claude/cloud
-```
+**No branch setup needed.** Both sessions share `dev` (or `main`) and work on `feat/<task>` sub-branches directly. There are no `claude/local` / `claude/cloud` lineage branches — that pattern was tried and removed (see L-069 in `tasks/lessons.md`).
 
-**How to start the cloud session:** open https://claude.ai/code → Code tab → New session → pick `vkkatariya/orlon-bot` → pick branch `claude/cloud` → rename to `[orlon-bot]-cloud`. NOT from the CLI — `claude --remote-control` is a relay, not a cloud container.
+**How to start the cloud session:** open https://claude.ai/code → Code tab → New session → pick the repo → pick the sub-branch the local session is working on → rename to `[orlon-bot]-cloud`. The cloud session spins up in an Anthropic container with a fresh clone.
 
-**Cross-session handoff:** read top 3 of `tasks/DEVLOG.md` on every resume — the cloud and local sessions log to the same DEVLOG with `cloud-session-start` / `cloud-session-end` / `local-session-handoff` markers so the other side knows what happened. Coordination also happens via git branches and PRs.
+**Cross-session coordination:** via git (both sessions commit to the same repo) and `tasks/DEVLOG.md` (the local session writes; the cloud session reads if it needs context, writes if it does heavy work). Cloud session work is committed to whatever sub-branch it's working on, then merged via PR like any other contribution.
+
+ read top 3 of `tasks/DEVLOG.md` on every resume — the cloud and local sessions log to the same DEVLOG with `cloud-session-start` / `cloud-session-end` / `local-session-handoff` markers so the other side knows what happened. Coordination also happens via git branches and PRs.
 
 ## Workflow references (symlinked, homelab-only)
 
